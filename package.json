@@ -453,6 +453,7 @@
     "jasmine-core": "^3.6.0",
     "karma-browserify": "^7.0.0",
     "karma-browserstack-launcher": "^1.6.0",
+    "karma-sauce-launcher": "latest",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.3.0",

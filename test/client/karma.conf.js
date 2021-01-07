@@ -1,8 +1,10 @@
 const fs = require('fs')
 
 const TRAVIS_WITH_BS = !!process.env.BROWSER_STACK_ACCESS_KEY
+const TRAVIS_WITH_SAUCE = !!process.env.SAUCE_ACCESS_KEY
 
-const launchers = {
+// Key names are 'browsers'
+const browserStackLaunchers = {
   bs_chrome: {
     base: 'BrowserStack',
     browser: 'chrome',
@@ -14,34 +16,43 @@ const launchers = {
     browser: 'firefox',
     os: 'Windows',
     os_version: '10'
-  },
-  bs_safari: {
-    base: 'BrowserStack',
-    browser: 'safari',
-    browser_version: '9.0',
-    os_version: 'El Capitan',
-    os: 'OS X'
-  },
-  bs_ie_11: {
-    base: 'BrowserStack',
-    browser: 'ie',
-    browser_version: '11.0',
-    os: 'Windows',
-    os_version: '10'
-  },
-  bs_ie_10: {
-    base: 'BrowserStack',
-    browser: 'ie',
-    browser_version: '10.0',
-    os: 'Windows',
-    os_version: '8'
-  },
-  bs_ie_9: {
-    base: 'BrowserStack',
-    browser: 'ie',
-    browser_version: '9.0',
-    os: 'Windows',
-    os_version: '7'
+  }
+  // bs_safari: {
+  //   base: 'BrowserStack',
+  //   browser: 'safari',
+  //   browser_version: '9.0',
+  //   os_version: 'El Capitan',
+  //   os: 'OS X'
+  // },
+  // bs_ie_11: {
+  //   base: 'BrowserStack',
+  //   browser: 'ie',
+  //   browser_version: '11.0',
+  //   os: 'Windows',
+  //   os_version: '10'
+  // },
+  // bs_ie_10: {
+  //   base: 'BrowserStack',
+  //   browser: 'ie',
+  //   browser_version: '10.0',
+  //   os: 'Windows',
+  //   os_version: '8'
+  // },
+  // bs_ie_9: {
+  //   base: 'BrowserStack',
+  //   browser: 'ie',
+  //   browser_version: '9.0',
+  //   os: 'Windows',
+  //   os_version: '7'
+  // }
+}
+
+const sauceLabsLaunchers = {
+  sl_chrome_linux: {
+    base: 'SauceLabs',
+    browserName: 'chrome',
+    platform: 'linux',
+    version: 'latest'
   }
 }
 
@@ -67,16 +78,16 @@ fs.lstat('node_modules/karma', (err, stats) => {
   process.exit(1)
 })
 
-let browsers = []
+const browsers = ['Chrome']
+let launchers = {}
 
-if (process.env.TRAVIS) {
-  if (TRAVIS_WITH_BS) {
-    browsers = Object.keys(launchers)
-  } else {
-    browsers.push('Firefox')
-  }
-} else {
-  browsers.push('Chrome')
+if (TRAVIS_WITH_BS) {
+  browsers.push(...Object.keys(browserStackLaunchers))
+  launchers = Object.assign(launchers, browserStackLaunchers)
+}
+if (TRAVIS_WITH_SAUCE) {
+  browsers.push(...Object.keys(sauceLabsLaunchers))
+  launchers = Object.assign(launchers, sauceLabsLaunchers)
 }
 
 module.exports = function (config) {
@@ -161,7 +172,8 @@ module.exports = function (config) {
       'karma-firefox-launcher',
       'karma-junit-reporter',
       'karma-browserify',
-      'karma-browserstack-launcher'
+      'karma-browserstack-launcher',
+      'karma-sauce-launcher'
     ],
 
     concurrency: 1,
@@ -174,6 +186,11 @@ module.exports = function (config) {
       // With many browsers the 120 requests per minute limit is hit
       // resulting in fails Error: 403 Forbidden (Rate Limit Exceeded)
       pollingTimeout: 10000
+    },
+
+    sauceLabs: {
+      testName: 'Karma client tests: saucelabs',
+      startConnect: true
     }
   })
 }
